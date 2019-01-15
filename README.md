@@ -34,3 +34,5 @@ A simple httpserver like Tomcat, just build some functions
 - [x] 实现了Servlet实例池
 
 - [x] 实现了参数解析
+
+- [x] 多线程处理请求
