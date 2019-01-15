@@ -71,16 +71,15 @@ public class WebParser {
         Map<String,String> servletMap = null;
 
         File file = new File(webXmlPath);
-        System.out.println(file.getPath());
+        //System.out.println(file.getPath());
         if (file.exists()){
             try {
-                System.out.println("das");
                 //创建 xml 解析器
                 SAXReader saxReader = new SAXReader();
                 //获取 document
                 Document document = saxReader.read(file);
                 //获取servlet节点元素
-                List<Element> servletNodes = document.selectNodes("/web-app/servlet");
+                List<Element> servletNodes = document.selectNodes("//web-app/servlet");
                 //接收 servlet-name 与 servlet-class
                 //map key: 【servlet-name】 value:【servlet-class】
                 Map<String,String> servletInforMap = new HashMap<String, String>();
@@ -97,17 +96,17 @@ public class WebParser {
                 Set<String> servletNames = servletInforMap.keySet();
 
                 //获取servlet-mapping节点元素
-                List<Element> servletMappingNodes = document.selectNodes("/web-app/servlet-mapping");
+                List<Element> servletMappingNodes = document.selectNodes("//web-app/servlet-mapping");
                 //接收 url-pattern 与 servlet-class
                 //map key: 【url-pattern】value:【servlet-class】
                 servletMap = new HashMap<String, String>();
                 for (int i = 0; i < servletInforMap.size(); i++) {
                     // 获取【servlet-name】
                     String servletName = servletMappingNodes.get(i).selectSingleNode("servlet-name").getStringValue();
+                     // value:【servlet-class】
+                    String value = servletInforMap.get(servletName);
                     // key: 【url-pattern】
-                    String key = servletInforMap.get(servletName);
-                    // value:【servlet-class】
-                    String value = servletMappingNodes.get(i).selectSingleNode("servlet-class").getStringValue();
+                    String key = servletMappingNodes.get(i).selectSingleNode("url-pattern").getStringValue();
                     // map key: 【url-pattern】 value:【servlet-class】
                     servletMap.put(key,value);
                 }

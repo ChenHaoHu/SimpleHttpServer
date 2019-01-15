@@ -45,6 +45,7 @@ public class RequestParser {
                 requestData.put("uri",s[1]);
                 requestData.put("protocol",s[2]);
 
+
                 /**
                  * 其他参数在应用中不涉及 不进行采集
                  * 采集下一行  temp = br.readLine(); 即可

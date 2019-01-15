@@ -1,6 +1,7 @@
 package com.hcy.httpserver.core;
 
 import com.hcy.httpserver.util.Logger;
+import javaxx.servlet.Servlet;
 
 import java.io.*;
 import java.net.Socket;
@@ -43,19 +44,27 @@ public class HandlerRequest implements Runnable{
 
             //todo:解决多次请求的问题 初步使用 requestData.get("uri") != null 强制转 404 页面
             if(requestData.get("uri") != null){
+
                 //获取请求的uri 例如：【/xx/yy/zz】
                 String uri = requestData.get("uri");
+
+                //获取没有参数的uri
+                RequestObject requestObject = new RequestObject(uri);
+                String  uriWithNoParameters = requestObject.getUriWithNoParameters();
+
                 //打印日志
-                Logger.log("httpserver uri: "+ uri);
+                Logger.log("httpserver uri: "+ uriWithNoParameters);
 
                 //后缀为 html 或者 htm 的请求为访问静态页面
-                if (uri.toLowerCase().endsWith("html") || uri.toLowerCase().endsWith("htm") ){
+                if (uriWithNoParameters.toLowerCase().endsWith("html") || uriWithNoParameters.toLowerCase().endsWith("htm") ){
 
-                    responseStaticPage(uri,out);
-
+                    responseStaticPage(uriWithNoParameters,out);
 
                 }else{
-                    show404Page(out);
+
+                    //访问动态数据 ————> 访问【servlet】
+                    //show404Page(out);
+                    responseServlet(uri,out);
                 }
             }else{
                 show404Page(out);
@@ -77,6 +86,103 @@ public class HandlerRequest implements Runnable{
             }
 
         }
+    }
+
+    /**
+     * 访问servlet
+     * @param uri
+     * @param out
+     */
+    private void responseServlet(String uri, PrintWriter out) {
+
+        //获取 RequestObject
+        RequestObject requestObject = new RequestObject(uri);
+        //获取 RequesObjecte
+        ResponseObject responseObject = new ResponseObject(out);
+
+        //访问servlet
+
+        //检查是否在 web.xml 中配置过
+
+        //获取appname
+        String appName = requestObject.getAppName();
+
+        //判断是否有这个项目被配置
+        if(WebParser.webData.containsKey(appName)){
+
+
+            //有这个项目
+            Map<String, String> mappingMap = WebParser.webData.get(appName);
+            //判断是否有这个请求路径
+            String urlPattern = requestObject.getUrlPattern();
+            Logger.log("urlPattern: "+urlPattern);
+            if (mappingMap.containsKey(urlPattern)){
+                //处理一下 响应头
+                StringBuffer html = new StringBuffer();
+                //拼接响应信息
+                html.append("HTTP/1.1 200 OK\n");
+                html.append("Content-Type:text/html;charset=utf-8\n\n");
+                out.print(html);
+
+                //含有这个 urlPattern
+                //根据 urlPattern 获取 classPath
+                String classPath = mappingMap.get(urlPattern);
+                Logger.log("classPath: " + classPath);
+                //反射 ——> 加载【servlet】
+                try {
+
+                    //检查 servlet 缓存池  是否有现成的
+
+                    //取出
+                    Servlet servletNew = ServletPool.get(urlPattern);
+
+                    if (servletNew == null){
+
+                        //获取 class
+                        Class c = Class.forName(classPath);
+                        Object o = c.newInstance();
+                        //解耦 转化为【servlet】
+                        Servlet servlet = (Servlet)o;
+                        //执行 service 方法
+                        servlet.serivice(requestObject,responseObject);
+                        Logger.log("servlet: "+ servlet);
+                        //放回
+                        ServletPool.put(urlPattern,servlet);
+
+                    }else{
+                        //执行 service 方法
+                        servletNew.serivice(requestObject,responseObject);
+                        Logger.log("servlet: "+ servletNew);
+                        //放回
+                        ServletPool.put(urlPattern,servletNew);
+                    }
+
+
+                    if (out!=null){
+                        out.flush();
+                    }
+
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InstantiationException e) {
+                    e.printStackTrace();
+                }
+
+            }else{
+                //没有这个 urlPattern
+                // 404
+                Logger.log("urlPattern no way");
+                show404Page(out);
+            }
+
+
+        }else{
+            //没有这个项目名
+            show404Page(out);
+        }
+
     }
 
     private void show404Page(PrintWriter out) {
