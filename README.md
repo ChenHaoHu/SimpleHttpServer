@@ -3,13 +3,13 @@ A simple httpserver like Tomcat, just build some functions
 
 简单实现一个http服务器
 
-![](http://www.hcyang.top:8081/cat.svg)
+<center>![](http://www.hcyang.top:8081/cat.svg)</center>
 
 
 
 
 
-[![](https://img.shields.io/github/license/ChenHaoHu/SimpleHttpServer.svg)]([![](https://img.shields.io/github/forks/ChenHaoHu/SimpleHttpServer.svg)](https://github.com/ChenHaoHu/SimpleHttpServer)) [![](https://img.shields.io/github/stars/ChenHaoHu/SimpleHttpServer.svg)](https://github.com/ChenHaoHu/SimpleHttpServer) ![](https://img.shields.io/github/issues/ChenHaoHu/SimpleHttpServer.svg) ![](https://img.shields.io/badge/JAVA-PRO-red.svg)　
+<center>[![](https://img.shields.io/github/license/ChenHaoHu/SimpleHttpServer.svg)]([![](https://img.shields.io/github/forks/ChenHaoHu/SimpleHttpServer.svg)](https://github.com/ChenHaoHu/SimpleHttpServer)) [![](https://img.shields.io/github/stars/ChenHaoHu/SimpleHttpServer.svg)](https://github.com/ChenHaoHu/SimpleHttpServer) ![](https://img.shields.io/github/issues/ChenHaoHu/SimpleHttpServer.svg) ![](https://img.shields.io/badge/JAVA-PRO-red.svg)　</center>
 
 
 
