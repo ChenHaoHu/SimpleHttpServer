@@ -10,7 +10,7 @@
 
     <servlet-mapping>
         <servlet-name>EmailServlet</servlet-name>
-        <url-pattern>/xx</url-pattern>
+        <url-pattern>/mail/s</url-pattern>
     </servlet-mapping>
 
 </web-app>

@@ -72,7 +72,9 @@ public class HandlerRequest implements Runnable{
 
         }catch (IOException e){
             e.printStackTrace();
-        }finally {
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
             if(out!=null){
                 out.close();
             }
@@ -93,7 +95,7 @@ public class HandlerRequest implements Runnable{
      * @param uri
      * @param out
      */
-    private void responseServlet(String uri, PrintWriter out) {
+    private void responseServlet(String uri, PrintWriter out) throws Exception {
 
         //获取 RequestObject
         RequestObject requestObject = new RequestObject(uri);

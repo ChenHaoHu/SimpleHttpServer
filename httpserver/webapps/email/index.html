@@ -1,11 +1,108 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE HTML >
+<html>
 <head>
+
     <meta charset="UTF-8">
-    <title>欢迎来到邮箱发射现场</title>
-</head>
-<body>
-<div style="text-align: center;font-size: 40px;color: red;">  HELLO HTTPSERVER！！！</div>
+
+    <title>httpserver 测试运行项目</title>
+<!-- css样式 层叠样式表 -->
+<style type="text/css">
+    * {
+        margin: 0px;
+    }
+
+    body {
+        background: url("http://p16.qhimg.com/bdm/720_444_0/t01e2b452e6e86b8f70.jpg");
+        background-size: cover;
+    }
+
+    /*start header*/
+    .header {
+        width: 100%;
+    }
+
+    .header .h-con {
+        width: 1000px;
+        margin: 0 auto;
+        margin-top: 10px;
+    }
+
+    .header .h-con span {
+        font-size: 24px;
+        font-family: "微软雅黑";
+        font-weight:200;
+        float: right;
+        color: #000;
+        line-height: 30px;
+    }
+    /*end header*/
+
+    /*start con*/
+    .con {
+        width: 770px;
+        height: 365px;
+        margin: 100px 0 0 150px;
+        line-height: 60px;
+        color: #fff;
+    }
+
+    .con input {
+        width: 400px;
+        height: 30px;
+    }
+
+    .con textarea {
+        width: 400px;
+        height: 100px;
+    }
+
+    .con .c-btn {
+        margin-left: 70px;
+        border: none;
+        outline: none;
+        width: 408px;
+        height: 40px;
+        background: #3366ff;
+        font-size: 18px;
+        color: #fff;
+        border-radius: 4px;
+    }
+
+    .c-btn:hover {
+        background: #009999;
+    }
+
+    .footer{
+        text-align: center;
+
+    }
+    /*end con*/
+</style>
+<body data-genuitec-lp-enabled="false" data-genuitec-file-id="wc2-0" data-genuitec-path="/email/WebRoot/index.jsp">
+<!-- start header -->
+<div class="header" data-genuitec-lp-enabled="false" data-genuitec-file-id="wc2-0" data-genuitec-path="/email/WebRoot/index.jsp">
+    <!--<div class="h-con">-->
+        <!--<img src="http://p15.qhimg.com/bdm/360_222_0/t01c851af8f1f741009.jpg"> <span>Java开发邮件群发系统</span>-->
+    <!--</div>-->
+</div>
+<!-- end header -->
+
+<!-- start con -->
+<form action="/email/mail/s" method="get">
+    <div class="con">
+        <p>
+            <span>收件人：</span> <input type="text" name="send">
+        </p>
+        <p>
+            <span>主&emsp;题：</span> <input type="text" name="title">
+        </p>
+        <p>
+            <span>正&emsp;文：</span>
+            <textarea class="m-con"  name="text"></textarea>
+        </p>
+        <input type="submit" value="发送邮件" class="c-btn">
+    </div>
+</form>
 
 </body>
 </html>

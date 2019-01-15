@@ -3,6 +3,8 @@ package javaxx.servlet;
 import com.hcy.httpserver.core.RequestObject;
 import com.hcy.httpserver.core.ResponseObject;
 
+import javax.mail.NoSuchProviderException;
+
 /**
  * @Auther: 简单DI年华
  * @Date: 19-1-15 13:01
@@ -12,5 +14,5 @@ import com.hcy.httpserver.core.ResponseObject;
  */
 public interface Servlet {
     //处理核心业务
-    void serivice(RequestObject requestObject, ResponseObject responseObject);
+    void serivice(ServletRequest servletRequest, ServletResponse servletResponse) throws Exception;
 }
