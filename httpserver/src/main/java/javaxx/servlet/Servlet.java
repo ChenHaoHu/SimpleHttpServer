@@ -3,7 +3,6 @@ package javaxx.servlet;
 import com.hcy.httpserver.core.RequestObject;
 import com.hcy.httpserver.core.ResponseObject;
 
-import javax.mail.NoSuchProviderException;
 
 /**
  * @Auther: 简单DI年华

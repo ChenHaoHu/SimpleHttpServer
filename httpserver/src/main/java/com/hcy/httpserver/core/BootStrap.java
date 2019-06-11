@@ -1,21 +1,34 @@
 package com.hcy.httpserver.core;
 
 import com.hcy.httpserver.util.Logger;
+import sun.rmi.runtime.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * @Auther: 简单DI年华
- * @Date: 19-1-14 23:03
+ * @Date: 19-6-11 20:53
  * @Description: 程序启动
- * @version 1.0
+ * @version 2.0
  * @since 1.0
  */
-public class BootStrap {
+public class BootStrap  implements Runnable{
+
+
+
+    static ServerSocketChannel ssc = null;
+    static Selector selector = null;
 
     /**
      * 启动类主方法
@@ -23,29 +36,28 @@ public class BootStrap {
      */
     public static void main(String[] args) {
         //程序入口
-        start();
+        BootStrap b = new BootStrap();
+        b.start();
+        new Thread(b).start();
     }
 
     /**
      * 主程序入口
      */
-    private static void start() {
+    private  void start() {
 
         Logger.log("httpserver start");
 
-        //服务器端socket
-        ServerSocket serverSocket = null;
 
-        //客户端socket serverSocket.accept();
-        Socket clientSocket= null;
-
-        try {
-            //记录启动开始时间
+        try{
             long start = System.currentTimeMillis();
-            //从server.xml解析出port号
-            int port = ServerParser.getport();
-            //初始化服务器 创建服务器套接字 设置端口号
-            serverSocket = new ServerSocket(port);
+            //打开一个通道
+            ssc = ServerSocketChannel.open();
+            ssc.socket().bind(new InetSocketAddress(ServerParser.getport()));
+            ssc.configureBlocking(false);
+            selector = Selector.open();
+            SelectionKey sk = ssc.register(selector, SelectionKey.OP_ACCEPT);
+            sk.attach(new Acceptor());
             //加载 web.xml 文件
             WebParser.init();
             //记录启动结束时间
@@ -53,50 +65,64 @@ public class BootStrap {
 
             Logger.log("httpserver started: "+ (end - start)+" ms");
 
-            //多线程处理客户端请求
-            //死循环进行接收
 
-            while(true){
-
-                //获取来自客户端的socket
-                clientSocket = serverSocket.accept();
-                //多线程开启 解决请求 把来自客户端的socket传入
-                new Thread(new HandlerRequest(clientSocket)).start();
-
-            }
-
-
-//            //接收请求
-//            Socket accept = serverSocket.accept();
-//            //获取输入流
-//            BufferedReader br = new BufferedReader(new InputStreamReader(accept.getInputStream()));
-//            //打印输入流内容
-//            String temp = null;
-//
-//            while((temp = br.readLine())!=null){
-//                System.out.println(temp);
-//            }
+            //启动完毕 开始监听
 
 
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }finally {
 
-            //关闭socket
-            try {
-                if(serverSocket != null){
-                    serverSocket.close();
-                }
-                if(clientSocket != null){
-                    clientSocket.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
+
+        }catch (Exception e){
+            Logger.log("启动出现错误");
         }
 
     }
+
+    private void dispatch(SelectionKey key) {
+        Runnable r = (Runnable)(key.attachment());
+        if (r!=null){
+            r.run();
+        }
+    }
+
+    public void run() {
+        try {
+            while (true){
+                int events = selector.select();
+                if (events>0){
+                    Logger.log("selector get something");
+                    Iterator<SelectionKey> selectionKeys = selector.selectedKeys().iterator();
+                    while (selectionKeys.hasNext()){
+                        SelectionKey key = selectionKeys.next();
+                        Logger.log("dispath something");
+                        dispatch(key);
+
+                    }
+                    selector.selectedKeys().clear();
+                }
+            }
+        }catch (Exception e){
+            System.out.println(e);
+            Logger.log("出问题了");
+        }
+    }
+
+    class Acceptor implements Runnable{
+
+        public void run() {
+            try{
+                Logger.log("accept something");
+                SocketChannel c = ssc.accept();
+                if (c != null){
+                    new Handler(selector,c);
+                }
+            }catch (Exception e){
+
+            }
+        }
+    }
+
 
 
 }
