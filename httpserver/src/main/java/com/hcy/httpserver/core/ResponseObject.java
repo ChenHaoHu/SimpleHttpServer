@@ -14,21 +14,21 @@ import java.io.PrintWriter;
  */
 public class ResponseObject implements ServletResponse {
 
-    private PrintWriter  pw = null;
+    private StringBuffer  pw = null;
 
-    public ResponseObject(PrintWriter pw) {
+    public ResponseObject(StringBuffer pw) {
         this.pw = pw;
     }
-    public PrintWriter getPw() {
+    public StringBuffer getPw() {
         return pw;
     }
 
-    public void setPw(PrintWriter pw) {
+    public void setPw(StringBuffer pw) {
         this.pw = pw;
     }
 
 
-    public PrintWriter getWriter() throws IOException {
+    public StringBuffer getWriter() throws IOException {
         return pw;
     }
 }

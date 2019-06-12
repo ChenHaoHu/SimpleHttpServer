@@ -17,10 +17,10 @@ public class RequestParser {
 
     /**
      *  解析请求信息
-     * @param br
+     * @param input
      * @return
      */
-    public static Map<String,String> getRequestData(BufferedReader br) {
+    public static Map<String,String> getRequestData(String input) {
 
         /**
          *      GET /xx/yy/zz HTTP/1.1
@@ -30,33 +30,28 @@ public class RequestParser {
         Map<String,String> requestData = new HashMap<String, String>();
 
 
-        try {
-            //读取一行
-            String temp = br.readLine();
-
-           //进行解析
-            if(temp != null){
-                // GET /xx/yy/zz HTTP/1.1
-                //根据空格分割成三部分 分别是 【请求方法】、【请求uri】、【请求协议及版本号】
-
-                String[] s = temp.split(" ");
-
-                requestData.put("method",s[0]);
-                requestData.put("uri",s[1]);
-                requestData.put("protocol",s[2]);
-
-
-                /**
-                 * 其他参数在应用中不涉及 不进行采集
-                 * 采集下一行  temp = br.readLine(); 即可
-                 */
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
+        String temp = input;
+        char c = temp.charAt(0);
+        if (c == '\u0000'){
+            return requestData;
         }
+        temp = temp.substring(0, 30);
+        System.out.println(temp);
+        //进行解析
+        if(temp != null){
+            // GET /xx/yy/zz HTTP/1.1
+            //根据空格分割成三部分 分别是 【请求方法】、【请求uri】、【请求协议及版本号】
 
+            String[] s = temp.split(" ");
+            requestData.put("method",s[0]);
+            requestData.put("uri",s[1]);
+            requestData.put("protocol",s[2]);
 
+            /**
+             * 其他参数在应用中不涉及 不进行采集
+             * 采集下一行  temp = br.readLine(); 即可
+             */
+        }
         return requestData;
     }
 }
