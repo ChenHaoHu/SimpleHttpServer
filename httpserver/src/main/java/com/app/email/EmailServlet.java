@@ -64,8 +64,8 @@ public class EmailServlet  implements Servlet {
         ts.sendMessage(message, message.getAllRecipients());
         ts.close();
 
-        PrintWriter pw = servletResponse.getWriter();
-        pw.print("<div style=\"text-align: center;font-size: 40px;color: red;\">  发送成功！！</div>");
+        StringBuffer pw = servletResponse.getWriter();
+        pw.append("<div style=\"text-align: center;font-size: 40px;color: red;\">  发送成功！！</div>");
     }
 
     /**

@@ -13,7 +13,7 @@ import java.util.Locale;
  */
 public interface ServletResponse {
 
-    public abstract PrintWriter getWriter()
+    public abstract StringBuffer getWriter()
             throws IOException;
 
 }

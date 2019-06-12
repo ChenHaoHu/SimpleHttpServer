@@ -5,6 +5,7 @@ import javaxx.servlet.Servlet;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.Map;
 
 /**
@@ -14,9 +15,11 @@ import java.util.Map;
  * @version 1.0
  * @since 1.0
  */
-public class HandlerRequest implements Runnable{
+public class HandlerRequest {
 
-    private Socket clientSocket = null;
+    private ByteBuffer input = null;
+
+    private ByteBuffer output = null;
 
     private BufferedReader br = null;
 
@@ -25,22 +28,25 @@ public class HandlerRequest implements Runnable{
     private Map<String, String> requestData = null;
 
 
-    public HandlerRequest(Socket clientSocket) {
-        this.clientSocket = clientSocket;
+    public HandlerRequest(ByteBuffer input, ByteBuffer output) {
+        this.input = input;
+        this.output = output;
     }
 
-    public void run() {
+    public ByteBuffer run() {
 
         Logger.log("httpserver thread:"+ Thread.currentThread().getName());
+        StringBuffer out = new StringBuffer();
 
         try {
 
-            //获取输入流
-            br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            byte[] b = input.array();
+            String input = new String(b);
+
             //解析请求的信息
-            requestData = RequestParser.getRequestData(br);
-            //获取输入流
-            out =  new PrintWriter(clientSocket.getOutputStream());
+            requestData = RequestParser.getRequestData(input);
+            Logger.log("request :"+requestData);
+
 
             //todo:解决多次请求的问题 初步使用 requestData.get("uri") != null 强制转 404 页面
             if(requestData.get("uri") != null){
@@ -58,16 +64,16 @@ public class HandlerRequest implements Runnable{
                 //后缀为 html 或者 htm 的请求为访问静态页面
                 if (uriWithNoParameters.toLowerCase().endsWith("html") || uriWithNoParameters.toLowerCase().endsWith("htm") ){
 
-                    responseStaticPage(uriWithNoParameters,out);
+                    out =  responseStaticPage(uriWithNoParameters,out);
 
                 }else{
 
                     //访问动态数据 ————> 访问【servlet】
                     //show404Page(out);
-                    responseServlet(uri,out);
+                    out = responseServlet(uri,out);
                 }
             }else{
-                show404Page(out);
+                out = show404Page(out);
             }
 
         }catch (IOException e){
@@ -75,9 +81,6 @@ public class HandlerRequest implements Runnable{
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if(out!=null){
-                out.close();
-            }
 
             if(br!=null){
                 try {
@@ -88,19 +91,22 @@ public class HandlerRequest implements Runnable{
             }
 
         }
+
+        return output.put(out.toString().getBytes());
     }
 
     /**
      * 访问servlet
      * @param uri
-     * @param out
+     * @param html
      */
-    private void responseServlet(String uri, PrintWriter out) throws Exception {
+    private StringBuffer responseServlet(String uri, StringBuffer html) throws Exception {
 
         //获取 RequestObject
         RequestObject requestObject = new RequestObject(uri);
+
         //获取 RequesObjecte
-        ResponseObject responseObject = new ResponseObject(out);
+        ResponseObject responseObject = new ResponseObject(html);
 
         //访问servlet
 
@@ -120,11 +126,11 @@ public class HandlerRequest implements Runnable{
             Logger.log("urlPattern: "+urlPattern);
             if (mappingMap.containsKey(urlPattern)){
                 //处理一下 响应头
-                StringBuffer html = new StringBuffer();
+
                 //拼接响应信息
                 html.append("HTTP/1.1 200 OK\n");
                 html.append("Content-Type:text/html;charset=utf-8\n\n");
-                out.print(html);
+
 
                 //含有这个 urlPattern
                 //根据 urlPattern 获取 classPath
@@ -159,10 +165,9 @@ public class HandlerRequest implements Runnable{
                         ServletPool.put(urlPattern,servletNew);
                     }
 
+                    return html;
 
-                    if (out!=null){
-                        out.flush();
-                    }
+
 
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
@@ -176,92 +181,80 @@ public class HandlerRequest implements Runnable{
                 //没有这个 urlPattern
                 // 404
                 Logger.log("urlPattern no way");
-                show404Page(out);
+                return show404Page(html);
             }
 
 
         }else{
             //没有这个项目名
-            show404Page(out);
+            return show404Page(html);
         }
-
+        return show404Page(html);
     }
 
-    private void show404Page(PrintWriter out) {
+    private StringBuffer show404Page(StringBuffer html) {
         // 404 页面
-        StringBuffer html = new StringBuffer();
+
 
         //拼接响应信息
         html.append("HTTP/1.1 200 OK\n");
         html.append("Content-Type:text/html;charset=utf-8\n\n");
-
         html.append("<div style=\"text-align: center;font-size: 40px;color: red;\"> 404页面</div>");
+        return html;
 
-        out.print(html);
-        out.flush();
     }
 
     /**
      * 处理静态页面
      * @param uri
      */
-    private void responseStaticPage(String uri,PrintWriter out)  {
+    private StringBuffer responseStaticPage(String uri,StringBuffer html) throws IOException {
 
-       BufferedReader fileReader = null;
-       File file = null;
-
-      try{
-          //这里访问静态页面 输出静态页面到输出流即可
-          String[] dirs = uri.split("/");
-
-          StringBuffer path = new StringBuffer();
-
-          for (int i = 0; i < dirs.length; i++) {
-              path.append(File.separator+dirs[i]);
-          }
-
-          //拼接文件路径
-          //todo:解决路径问题 初步认定为是本项目是模块项目导致根路径为模块目录
-          file = new File("httpserver"+File.separator+
-                  "webapps"+path);
-
-         // Logger.log(file.getPath());
-
-          //判断文件在不在
-          if(file.exists()){
-              //获取文件流
-               fileReader = new BufferedReader(new FileReader(file));
-
-              String temp = null;
-
-              StringBuffer html = new StringBuffer();
-
-              //拼接响应信息
-              html.append("HTTP/1.1 200 OK\n");
-              html.append("Content-Type:text/html;charset=utf-8\n\n");
-
-              while ((temp = fileReader.readLine())!=null){
-                  html.append(temp);
-              }
-
-              out.print(html);
-              out.flush();
+        BufferedReader fileReader = null;
+        File file = null;
 
 
-          }else{
-              //404 页面
-              show404Page(out);
-          }
-      }catch (IOException e){
-          e.fillInStackTrace();
-      }finally {
-          if(fileReader!=null){
-              try {
-                  fileReader.close();
-              } catch (IOException e) {
-                  e.printStackTrace();
-              }
-          }
-      }
+        //这里访问静态页面 输出静态页面到输出流即可
+        String[] dirs = uri.split("/");
+
+        StringBuffer path = new StringBuffer();
+
+        for (int i = 0; i < dirs.length; i++) {
+            path.append(File.separator+dirs[i]);
+        }
+
+        //拼接文件路径
+        //todo:解决路径问题 初步认定为是本项目是模块项目导致根路径为模块目录
+        file = new File("httpserver"+File.separator+
+                "webapps"+path);
+
+        // Logger.log(file.getPath());
+
+        //判断文件在不在
+        if(file.exists()){
+            //获取文件流
+            fileReader = new BufferedReader(new FileReader(file));
+
+            String temp = null;
+
+
+
+            //拼接响应信息
+            html.append("HTTP/1.1 200 OK\n");
+            html.append("Content-Type:text/html;charset=utf-8\n\n");
+
+            while ((temp = fileReader.readLine())!=null){
+                html.append(temp);
+            }
+
+            return html;
+
+        }else{
+            //404 页面
+            return show404Page(html);
+        }
+
+
+
     }
 }
