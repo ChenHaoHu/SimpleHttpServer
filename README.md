@@ -20,6 +20,8 @@ A simple httpserver like Tomcat, just build some functions
 > 2019/1/14 v1.0 实现静态页面请求处理
 >
 > 2019/1/15 v1.0 实现动态servlet请求
+>
+> 2019/6/11-12 v2.0 实现NIO（参考Doug Lea 大佬的 Scalable IO in Java，ppt在项目根目录）
 
 
 
@@ -36,3 +38,5 @@ A simple httpserver like Tomcat, just build some functions
 - [x] 实现了参数解析
 
 - [x] 多线程处理请求
+
+- [x] 改成了NIO的形式
